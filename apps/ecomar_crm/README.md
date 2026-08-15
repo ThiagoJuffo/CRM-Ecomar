@@ -56,8 +56,10 @@ bench --site crm.localhost clear-cache
    bench --site crm.localhost clear-cache
    ```
 
-> As cores e o logo atuais são **placeholders** (paleta eco-marinha). É só
-> trocar pela identidade oficial.
+> As cores já usam o **verde oficial da Ecomar** (`--ecomar-primary: #1e9e1e`).
+> O logo/favicon são uma **recriação vetorial** fiel ao conceito da marca
+> (folha + casa com painel solar) — para ficar pixel-perfect, substitua os SVGs
+> pelos arquivos oficiais (mesmo nome) e rode o build.
 
 ## Adicionar novas customizações
 

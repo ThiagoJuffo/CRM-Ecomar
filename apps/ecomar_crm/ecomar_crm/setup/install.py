@@ -6,7 +6,7 @@ customizados usados pela Ecomar no Frappe CRM.
 
 import frappe
 
-BRAND_NAME = "Ecomar CRM"
+BRAND_NAME = "Ecomar Engenharia"
 LOGO = "/assets/ecomar_crm/images/ecomar-logo.svg"
 FAVICON = "/assets/ecomar_crm/images/ecomar-favicon.svg"
 
@@ -31,7 +31,7 @@ def _aplicar_branding():
             "banner_image": LOGO,
             "favicon": FAVICON,
             "brand_html": f'<img src="{LOGO}" alt="{BRAND_NAME}" style="height:28px">',
-            "copyright": "Ecomar",
+            "copyright": "Ecomar Engenharia",
         }
         for campo, valor in campos.items():
             if ws.meta.has_field(campo):

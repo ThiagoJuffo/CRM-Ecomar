@@ -1,14 +1,14 @@
 /* ==========================================================================
-   Branding da Ecomar aplicado ao desk do Frappe.
+   Branding da Ecomar Engenharia (Energia Solar) aplicado ao desk do Frappe.
 
-   Paleta PLACEHOLDER (eco-marinha). Troque pelos valores oficiais da Ecomar:
-   basta ajustar as variaveis abaixo e rodar `bench build --app ecomar_crm`.
+   Paleta verde oficial da marca. Ajuste fino: altere as variaveis abaixo e
+   rode `bench build --app ecomar_crm`.
    ========================================================================== */
 :root {
-  --ecomar-primary: #0e7c7b;        /* teal principal */
-  --ecomar-primary-dark: #0a5f5e;   /* teal escuro (hover) */
-  --ecomar-accent: #2fb380;         /* verde de destaque */
-  --ecomar-ink: #0b2a2a;            /* texto/contraste */
+  --ecomar-primary: #1e9e1e;        /* verde principal Ecomar */
+  --ecomar-primary-dark: #167016;   /* verde escuro (hover) */
+  --ecomar-accent: #43b543;         /* verde de destaque */
+  --ecomar-ink: #4d4d4d;            /* cinza do wordmark "Ecomar" */
 }
 
 /* Cor primaria do Frappe (botoes, links, foco) */

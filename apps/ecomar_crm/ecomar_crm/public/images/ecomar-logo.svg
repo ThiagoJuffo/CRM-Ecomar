@@ -17,8 +17,7 @@
     <rect x="39" y="43" width="8" height="12" fill="#1E9E1E"/>
   </g>
 
-  <!-- Wordmark -->
-  <text x="96" y="36" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400" fill="#4d4d4d">Ecomar</text>
-  <text x="182" y="36" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="400" fill="#1E9E1E">Eng.</text>
+  <!-- Wordmark (todo verde, como na versao horizontal oficial) -->
+  <text x="96" y="36" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="400" fill="#1E9E1E">Ecomar Engenharia</text>
   <text x="96" y="58" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2" fill="#1E9E1E">ENERGIA SOLAR</text>
 </svg>

@@ -120,7 +120,9 @@ Os dados ficam em **volumes Docker**, então sobrevivem a `stop`/`start`:
 crm-ecomar/
 ├── docker-compose.yml     # Serviços: mariadb, redis e frappe (CRM)
 ├── docker/
-│   └── init.sh            # Provisiona o bench e instala o Frappe CRM
+│   └── init.sh            # Provisiona o bench e instala o Frappe CRM + Ecomar CRM
+├── apps/
+│   └── ecomar_crm/        # App próprio da Ecomar (customizações + branding)
 ├── scripts/
 │   ├── start.sh           # Sobe o CRM
 │   ├── stop.sh            # Para (preserva dados)
@@ -131,18 +133,24 @@ crm-ecomar/
 └── README.md
 ```
 
+> O app **`apps/ecomar_crm`** é instalado automaticamente pelo `init.sh`, por
+> cima do Frappe CRM. É onde ficam as customizações e o branding da Ecomar —
+> veja [`apps/ecomar_crm/README.md`](apps/ecomar_crm/README.md).
+
 ---
 
 ## 🗺️ Próximos passos
 
 Este setup é focado em **desenvolvimento/avaliação local**. Para evoluir:
 
-- **Customizações da Ecomar:** criar um app Frappe próprio (ex.: `ecomar_crm`)
-  com doctypes, campos e automações específicas, instalado por cima do CRM.
+- ✅ **App próprio da Ecomar:** o `apps/ecomar_crm` já existe, com branding e um
+  campo customizado de exemplo. Expanda com novos doctypes, campos e automações
+  (veja [`apps/ecomar_crm/README.md`](apps/ecomar_crm/README.md)).
+- **Branding oficial:** troque o logo/favicon placeholder e as cores pelos
+  ativos oficiais da Ecomar (instruções no README do app).
 - **Produção:** publicar em um servidor/VPS com HTTPS (Traefik ou Nginx) e
   senhas fortes, ou usar o [Frappe Cloud](https://frappecloud.com/) (hospedagem
   gerenciada oficial).
-- **Branding:** logo, cores e domínio da Ecomar.
 
 Abra uma issue ou fale com o time para priorizarmos esses passos.
 

@@ -1,0 +1,50 @@
+/* ==========================================================================
+   Branding da Ecomar aplicado ao desk do Frappe.
+
+   Paleta PLACEHOLDER (eco-marinha). Troque pelos valores oficiais da Ecomar:
+   basta ajustar as variaveis abaixo e rodar `bench build --app ecomar_crm`.
+   ========================================================================== */
+:root {
+  --ecomar-primary: #0e7c7b;        /* teal principal */
+  --ecomar-primary-dark: #0a5f5e;   /* teal escuro (hover) */
+  --ecomar-accent: #2fb380;         /* verde de destaque */
+  --ecomar-ink: #0b2a2a;            /* texto/contraste */
+}
+
+/* Cor primaria do Frappe (botoes, links, foco) */
+:root {
+  --primary: var(--ecomar-primary);
+  --primary-color: var(--ecomar-primary);
+  --btn-primary: var(--ecomar-primary);
+  --text-on-primary: #ffffff;
+}
+
+.btn-primary,
+.btn-primary:focus {
+  background-color: var(--ecomar-primary);
+  border-color: var(--ecomar-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:active {
+  background-color: var(--ecomar-primary-dark);
+  border-color: var(--ecomar-primary-dark);
+}
+
+a,
+.text-primary {
+  color: var(--ecomar-primary);
+}
+
+/* Barra de navegacao com a identidade da Ecomar */
+.navbar,
+header .navbar {
+  border-bottom: 2px solid var(--ecomar-primary);
+}
+
+/* Logo da navbar com altura consistente */
+.navbar-brand img,
+.app-logo img {
+  height: 28px;
+  width: auto;
+}

@@ -46,6 +46,9 @@ sed -i '/watch/d' ./Procfile
 echo ">> Baixando o app Frappe CRM (branch ${CRM_BRANCH})..."
 bench get-app crm --branch "${CRM_BRANCH}"
 
+echo ">> Baixando o app Ecomar CRM (customizacoes e branding)..."
+bench get-app ecomar_crm /workspace/apps/ecomar_crm
+
 echo ">> Criando o site ${SITE_NAME}..."
 bench new-site "${SITE_NAME}" \
     --force \
@@ -55,6 +58,11 @@ bench new-site "${SITE_NAME}" \
 
 echo ">> Instalando o Frappe CRM no site..."
 bench --site "${SITE_NAME}" install-app crm
+
+echo ">> Instalando o Ecomar CRM (customizacoes e branding) no site..."
+bench --site "${SITE_NAME}" install-app ecomar_crm
+bench build --app ecomar_crm || true
+
 bench --site "${SITE_NAME}" set-config developer_mode 1
 bench --site "${SITE_NAME}" set-config mute_emails 1
 bench --site "${SITE_NAME}" set-config server_script_enabled 1

@@ -1,0 +1,3 @@
+# Patches de dados da Ecomar. Um por linha, no formato:
+#   ecomar_crm.patches.<arquivo>.<funcao>
+# Executados na ordem por `bench migrate`.

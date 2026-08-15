@@ -1,0 +1,20 @@
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "ecomar_crm"
+authors = [
+    { name = "Ecomar", email = "thiago@ecomareng.com" },
+]
+description = "Customizacoes e branding da Ecomar sobre o Frappe CRM"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = []
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"
+
+[tool.flit.module]
+name = "ecomar_crm"

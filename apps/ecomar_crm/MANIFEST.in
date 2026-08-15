@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include ecomar_crm *.css
+recursive-include ecomar_crm *.csv
+recursive-include ecomar_crm *.html
+recursive-include ecomar_crm *.ico
+recursive-include ecomar_crm *.js
+recursive-include ecomar_crm *.json
+recursive-include ecomar_crm *.md
+recursive-include ecomar_crm *.png
+recursive-include ecomar_crm *.py
+recursive-include ecomar_crm *.svg
+recursive-include ecomar_crm *.txt
+recursive-exclude ecomar_crm *.pyc

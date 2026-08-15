@@ -1,0 +1,14 @@
+# Variaveis de ambiente locais (contem senhas)
+.env
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log

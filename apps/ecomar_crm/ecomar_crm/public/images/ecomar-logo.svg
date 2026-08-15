@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="300" height="80" role="img" aria-label="Ecomar Engenharia - Energia Solar">
+  <!-- Logo horizontal da Ecomar Engenharia (icone + wordmark).
+       Recriacao vetorial fiel ao conceito da marca; troque pelo arquivo
+       oficial se desejar (mesmo nome de arquivo). -->
+
+  <!-- Icone: folha + casa com painel solar -->
+  <g transform="translate(0,6)">
+    <path d="M4 52 Q42 30 82 42 Q42 74 4 52 Z" fill="#1E9E1E"/>
+    <rect x="31" y="35" width="24" height="20" fill="#ffffff"/>
+    <polygon points="27,37 43,20 59,37" fill="#1E9E1E"/>
+    <g stroke="#ffffff" stroke-width="1.2" opacity="0.9">
+      <line x1="37" y1="28" x2="52" y2="28"/>
+      <line x1="33" y1="33" x2="56" y2="33"/>
+      <line x1="45" y1="21" x2="45" y2="37"/>
+      <line x1="51" y1="24" x2="51" y2="37"/>
+    </g>
+    <rect x="39" y="43" width="8" height="12" fill="#1E9E1E"/>
+  </g>
+
+  <!-- Wordmark (todo verde, como na versao horizontal oficial) -->
+  <text x="96" y="36" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="400" fill="#1E9E1E">Ecomar Engenharia</text>
+  <text x="96" y="58" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2" fill="#1E9E1E">ENERGIA SOLAR</text>
+</svg>

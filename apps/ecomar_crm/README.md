@@ -9,10 +9,27 @@ do [Frappe CRM](https://github.com/frappe/crm).
 
 ## O que este app faz
 
-- **Branding:** aplica nome, logo, favicon e cores da Ecomar (via
-  `Website Settings` + CSS de marca no desk do Frappe).
-- **Campos customizados:** cria, na instalação, o campo
-  `Segmento (Ecomar)` no doctype `CRM Lead` (exemplo do padrão a seguir).
+Na instalação (`after_install`), de forma **idempotente**, o app aplica toda a
+configuração inicial do CRM da Ecomar:
+
+- **Branding:** nome, logo, favicon e cores da Ecomar (via `Website Settings` +
+  CSS de marca no desk).
+- **Locale do Brasil:** moeda **BRL**, idioma **pt-BR**, fuso **America/Sao_Paulo**,
+  formato de data `dd/mm/aaaa` e de número `#.###,##`.
+- **Origens de lead** (`CRM Lead Source`): Site, Indicação, WhatsApp, Instagram,
+  Facebook, Google, Telefone, Feira/Evento, Parceiro, Marketing.
+- **Funil de vendas solar:**
+  - Status de **Lead**: Novo → Em Contato → Qualificado → Não Qualificado.
+  - Status de **Deal**: Qualificação → Visita Técnica → Proposta Enviada →
+    Negociação → Fechado (Ganho / Perdido), com probabilidades e cores.
+- **Campos de energia solar** (no `CRM Lead` e no `CRM Deal`): Tipo de
+  Instalação, Potência Estimada (kWp), Consumo Médio (kWh), Valor Médio da Conta
+  (R$), Concessionária, Tipo de Telhado e Fase da Rede.
+
+> Reaplicar a configuração a qualquer momento:
+> ```bash
+> bench --site crm.localhost execute ecomar_crm.setup.install.after_install
+> ```
 
 ## Estrutura
 
@@ -24,7 +41,7 @@ ecomar_crm/
     ├── modules.txt             # módulo "Ecomar CRM"
     ├── patches.txt
     ├── setup/
-    │   └── install.py          # aplica branding e cria campos customizados
+    │   └── install.py          # branding, locale, origens, funil e campos solar
     └── public/
         ├── css/ecomar_branding.css
         └── images/ecomar-logo.svg, ecomar-favicon.svg

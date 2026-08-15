@@ -32,19 +32,25 @@ docker compose version
 # 1. Clone o repositório e entre na pasta
 git clone https://github.com/thiagojuffo/crm-ecomar.git
 cd crm-ecomar
-
-# 2. Suba o CRM
-bash scripts/start.sh
 ```
 
-> 💡 Se preferir, você pode tornar os scripts executáveis uma única vez com
-> `chmod +x scripts/*.sh docker/init.sh` e daí rodar `./scripts/start.sh`.
+**2. Suba o CRM** (escolha conforme o seu sistema):
+
+- **Windows** — dê **duplo clique** em `scripts\start.bat` (ou rode-o no
+  Prompt de Comando). Para os logs, use `scripts\logs.bat`.
+- **Mac / Linux:**
+  ```bash
+  bash scripts/start.sh
+  ```
+
+> 💡 Mac/Linux: se preferir, torne os scripts executáveis uma vez com
+> `chmod +x scripts/*.sh docker/init.sh` e rode `./scripts/start.sh`.
 
 Na **primeira execução**, a instalação leva **alguns minutos** (baixa o Frappe,
-o app CRM e cria o banco de dados). Acompanhe o progresso com:
+os apps e cria o banco). Acompanhe o progresso com:
 
 ```bash
-bash scripts/logs.sh
+bash scripts/logs.sh      # Windows: scripts\logs.bat
 ```
 
 Quando os logs mostrarem os serviços rodando, acesse:

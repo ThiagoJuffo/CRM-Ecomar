@@ -39,6 +39,11 @@ instalar_app_ecomar() {
     rm -rf apps/ecomar_crm
     cp -r /workspace/apps/ecomar_crm apps/ecomar_crm
     ./env/bin/pip install -e apps/ecomar_crm
+    # Garante quebra de linha no fim de apps.txt antes de anexar; caso contrario
+    # o novo app "gruda" na ultima linha (ex.: crm + ecomar_crm -> crmecomar_crm).
+    if [ -f sites/apps.txt ] && [ -n "$(tail -c1 sites/apps.txt 2>/dev/null)" ]; then
+        echo >> sites/apps.txt
+    fi
     grep -qxF ecomar_crm sites/apps.txt 2>/dev/null || echo ecomar_crm >> sites/apps.txt
 }
 

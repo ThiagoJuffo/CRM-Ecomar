@@ -34,14 +34,17 @@ git clone https://github.com/thiagojuffo/crm-ecomar.git
 cd crm-ecomar
 
 # 2. Suba o CRM
-./scripts/start.sh
+bash scripts/start.sh
 ```
+
+> 💡 Se preferir, você pode tornar os scripts executáveis uma única vez com
+> `chmod +x scripts/*.sh docker/init.sh` e daí rodar `./scripts/start.sh`.
 
 Na **primeira execução**, a instalação leva **alguns minutos** (baixa o Frappe,
 o app CRM e cria o banco de dados). Acompanhe o progresso com:
 
 ```bash
-./scripts/logs.sh
+bash scripts/logs.sh
 ```
 
 Quando os logs mostrarem os serviços rodando, acesse:
@@ -80,10 +83,10 @@ As configurações ficam no arquivo `.env` (criado automaticamente a partir de
 
 | Ação                                   | Comando                              |
 | -------------------------------------- | ------------------------------------ |
-| Subir o CRM                            | `./scripts/start.sh`                 |
-| Ver os logs (instalação/execução)      | `./scripts/logs.sh`                  |
-| Parar (mantém os dados)                | `./scripts/stop.sh`                  |
-| Zerar tudo e reinstalar (apaga dados)  | `./scripts/reset.sh`                 |
+| Subir o CRM                            | `bash scripts/start.sh`              |
+| Ver os logs (instalação/execução)      | `bash scripts/logs.sh`               |
+| Parar (mantém os dados)                | `bash scripts/stop.sh`               |
+| Zerar tudo e reinstalar (apaga dados)  | `bash scripts/reset.sh`              |
 | Abrir um terminal no container         | `docker compose exec frappe bash`    |
 
 Rodando comandos do `bench` dentro do container:

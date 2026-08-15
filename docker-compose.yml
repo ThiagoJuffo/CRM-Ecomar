@@ -1,0 +1,55 @@
+name: ecomar-crm
+
+services:
+  mariadb:
+    image: mariadb:10.8
+    container_name: ecomar-crm-mariadb
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-123}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: ecomar-crm-redis
+    restart: unless-stopped
+
+  frappe:
+    image: frappe/bench:latest
+    container_name: ecomar-crm-frappe
+    command: bash /workspace/docker/init.sh
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - SHELL=/bin/bash
+      - SITE_NAME=${SITE_NAME:-crm.localhost}
+      - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-123}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - CRM_BRANCH=${CRM_BRANCH:-main}
+      - FRAPPE_BRANCH=${FRAPPE_BRANCH:-version-15}
+    working_dir: /home/frappe
+    volumes:
+      - frappe-bench:/home/frappe
+      - .:/workspace
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+      - "${SOCKETIO_PORT:-9000}:9000"
+    restart: unless-stopped
+
+volumes:
+  mariadb-data:
+  frappe-bench:

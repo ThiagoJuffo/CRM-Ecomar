@@ -97,3 +97,11 @@ def test_exemplo_manual(tmp_path):
     res = executar(entrada, tmp_path)
     assert res.arranjo.modulos_usados == 16
     assert res.quantidade_inversores == 1
+
+
+def test_coordenadas_do_link_do_maps():
+    link = ("https://www.google.com/maps/place/Due+%7C+Pizza+e+Esfiha/@-20.1986768,-40.2580338,51m/"
+            "data=!3m1!1e3!4m6!3m5!1s0xb81ff750afe56d:0x9bdfb4436508cd1b!8m2!3d-20.1986799!4d-40.2580866")
+    assert solar_api.coordenadas_do_link(link) == (-20.1986799, -40.2580866)
+    assert solar_api.coordenadas_do_link("https://maps.google.com/@-23.5,-46.6,17z") == (-23.5, -46.6)
+    assert solar_api.coordenadas_do_link("sem coordenadas") is None

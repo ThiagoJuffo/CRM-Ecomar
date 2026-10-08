@@ -39,6 +39,8 @@ pip install -e ".[test]"
 
    ```bash
    python -m projeto_solar exemplos/solar_api.json --endereco "Rua X, 123 - Cidade/UF"
+   # ou com o link do Google Maps da obra:
+   python -m projeto_solar exemplos/solar_api.json --maps "https://www.google.com/maps/place/...!3d-20.19!4d-40.25"
    ```
 
 A Solar API devolve, para cada água do telhado, inclinação, azimute, área e insolação

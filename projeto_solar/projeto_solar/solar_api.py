@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import math
 import os
+import re
+from urllib.parse import unquote
 
 import requests
 from shapely.geometry import box
@@ -27,6 +29,16 @@ def _chave(chave: str | None) -> str:
     if not chave:
         raise ErroSolarApi("Defina a variável de ambiente GOOGLE_MAPS_API_KEY")
     return chave
+
+
+def coordenadas_do_link(link: str) -> tuple[float, float] | None:
+    """Extrai latitude e longitude de um link do Google Maps.
+
+    Prefere o ponto do local marcado (!3d...!4d...) ao centro da câmera (@lat,lng).
+    """
+    link = unquote(link)
+    m = re.search(r"!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)", link) or re.search(r"@(-?\d+\.\d+),(-?\d+\.\d+)", link)
+    return (float(m.group(1)), float(m.group(2))) if m else None
 
 
 def geocodificar(endereco: str, chave: str | None = None) -> tuple[float, float]:

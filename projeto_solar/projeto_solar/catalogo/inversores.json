@@ -1,0 +1,38 @@
+[
+  {
+    "id": "exemplo-5k-mono",
+    "fabricante": "Genérico (EXEMPLO - substituir pelo datasheet real)",
+    "modelo": "String 5 kW monofásico 220 V",
+    "potencia_ca_w": 5000,
+    "potencia_cc_max_w": 7500,
+    "vcc_max": 600,
+    "vmppt_min": 90,
+    "vmppt_max": 520,
+    "vpartida": 120,
+    "n_mppt": 2,
+    "strings_por_mppt": 1,
+    "imp_max_por_mppt": 16,
+    "isc_max_por_mppt": 22,
+    "fases": 1,
+    "tensao_ca_v": 220,
+    "corrente_ca_max_a": 25
+  },
+  {
+    "id": "exemplo-10k-tri",
+    "fabricante": "Genérico (EXEMPLO - substituir pelo datasheet real)",
+    "modelo": "String 10 kW trifásico 380 V",
+    "potencia_ca_w": 10000,
+    "potencia_cc_max_w": 15000,
+    "vcc_max": 1100,
+    "vmppt_min": 140,
+    "vmppt_max": 1000,
+    "vpartida": 180,
+    "n_mppt": 2,
+    "strings_por_mppt": 2,
+    "imp_max_por_mppt": 32,
+    "isc_max_por_mppt": 40,
+    "fases": 3,
+    "tensao_ca_v": 380,
+    "corrente_ca_max_a": 16.7
+  }
+]

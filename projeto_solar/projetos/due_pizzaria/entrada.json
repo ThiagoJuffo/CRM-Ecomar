@@ -1,0 +1,30 @@
+{
+  "projeto": {
+    "nome": "Due Pizzaria",
+    "cliente": "Due | Pizza e Esfiha",
+    "endereco": "Serra/ES (-20.19868, -40.25809)"
+  },
+  "telhado": {
+    "origem": "solar_api",
+    "qualidade": "HIGH",
+    "lat": -20.1986799,
+    "lng": -40.2580866
+  },
+  "modulo": "exemplo-550",
+  "inversor": {
+    "id": "exemplo-10k-tri",
+    "quantidade": null
+  },
+  "local": {
+    "temp_min_c": 12,
+    "temp_max_amb_c": 36
+  },
+  "eletrico": {
+    "comprimento_cc_m": 25,
+    "comprimento_ca_m": 15
+  },
+  "parametros": {
+    "fracao_min_sol": 0.75,
+    "max_modulos": null
+  }
+}

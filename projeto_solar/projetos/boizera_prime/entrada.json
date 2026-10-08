@@ -1,0 +1,90 @@
+{
+  "projeto": {
+    "nome": "Boizera Prime",
+    "cliente": "Boizera Prime",
+    "endereco": "Serra/ES (-20.13069, -40.19300)"
+  },
+  "telhado": {
+    "origem": "foto",
+    "foto": "projetos/boizera_prime/foto_solar_api.jpg",
+    "referencia": {
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        100,
+        0
+      ],
+      "metros": 8.33
+    },
+    "norte_graus": 0,
+    "planos": [
+      {
+        "nome": "Água 1",
+        "poligono_px": [
+          [
+            632,
+            641
+          ],
+          [
+            455,
+            561
+          ],
+          [
+            557,
+            328
+          ],
+          [
+            738,
+            402
+          ]
+        ],
+        "obstaculos_px": [
+          [
+            [
+              715,
+              364
+            ],
+            [
+              575,
+              295
+            ],
+            [
+              595,
+              255
+            ],
+            [
+              738,
+              335
+            ]
+          ]
+        ]
+      }
+    ],
+    "lat": -20.1306886,
+    "lng": -40.1929954
+  },
+  "modulo": "generico-620",
+  "inversor": {
+    "id": "solplanet-15k-220v",
+    "quantidade": 3
+  },
+  "local": {
+    "temp_min_c": 12,
+    "temp_max_amb_c": 36
+  },
+  "eletrico": {
+    "comprimento_cc_m": 25,
+    "comprimento_ca_m": 15
+  },
+  "parametros": {
+    "fracao_min_sol": 0.75,
+    "max_modulos": 94,
+    "paginacao": {
+      "orientacoes": [
+        "retrato"
+      ]
+    }
+  }
+}

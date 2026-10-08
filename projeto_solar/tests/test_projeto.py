@@ -119,3 +119,48 @@ def test_coordenadas_do_link_do_maps():
     assert solar_api.coordenadas_do_link(link) == (-20.1986799, -40.2580866)
     assert solar_api.coordenadas_do_link("https://maps.google.com/@-23.5,-46.6,17z") == (-23.5, -46.6)
     assert solar_api.coordenadas_do_link("sem coordenadas") is None
+
+
+def _foto_sintetica(caminho):
+    import numpy as np
+    from PIL import Image
+    img = np.full((400, 700, 3), 60, dtype=np.uint8)
+    img[50:350, 50:650] = (200, 200, 200)  # telhado de 600 x 300 px
+    Image.fromarray(img).save(caminho)
+
+
+def test_plano_da_foto_escala_inclinacao_e_azimute():
+    from projeto_solar import foto
+    # beiral em baixo (y=350), sobe para o topo da foto: queda d'água para o sul
+    d = {"nome": "A", "inclinacao": 17, "poligono_px": [[50, 350], [650, 350], [650, 50], [50, 50]],
+         "obstaculos_px": [[[300, 150], [350, 150], [350, 200], [300, 200]]]}
+    plano = foto.plano_da_foto(d, escala_m_px=0.02)
+    minx, miny, maxx, maxy = plano.poligono.bounds
+    assert maxx - minx == pytest.approx(12.0)
+    assert maxy - miny == pytest.approx(6.0 / math.cos(math.radians(17)))
+    assert plano.azimute_graus == pytest.approx(180.0)
+    # ida e volta: o canto do beiral volta para o mesmo pixel
+    x, y = plano.transformacao.para_pixels(0, 0)
+    assert (round(x), round(y)) in {(50, 350), (650, 350)}
+    # foto girada: norte 90° à direita do topo -> a queda (topo->baixo) aponta para oeste
+    assert foto.plano_da_foto(d, 0.02, norte_graus=90).azimute_graus == pytest.approx(90.0)
+
+
+def test_fluxo_com_foto_e_solar_api(tmp_path):
+    caminho_foto = tmp_path / "drone.png"
+    _foto_sintetica(caminho_foto)
+    entrada = json.loads((EXEMPLOS / "telhado_manual.json").read_text(encoding="utf-8"))
+    entrada["telhado"] = {
+        "origem": "foto", "foto": str(caminho_foto),
+        "referencia": {"p1": [50, 350], "p2": [650, 350], "metros": 12.0},
+        "norte_graus": 180,  # foto tirada com o sul no topo -> queda para o norte
+        "planos": [{"nome": "Norte", "poligono_px": [[50, 350], [650, 350], [650, 50], [50, 50]]}],
+        "insights_arquivo": str(DADOS / "building_insights_exemplo.json"),
+    }
+    res = executar(entrada, tmp_path)
+    plano = res.paginacoes[0].plano
+    assert plano.azimute_graus == pytest.approx(0.0)
+    assert plano.inclinacao_graus == 17  # veio da Solar API (água norte do fixture)
+    assert plano.horas_sol_ano == 1650
+    assert (tmp_path / "00_sobreposicao_foto.png").stat().st_size > 0
+    assert res.arranjo.modulos_usados > 0

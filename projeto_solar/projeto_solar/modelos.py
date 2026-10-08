@@ -64,6 +64,8 @@ class PlanoTelhado:
     horas_sol_ano: float | None = None  # kWh/kWp/ano estimado pela Solar API
     origem: str = "manual"
     observacoes: list[str] = field(default_factory=list)
+    transformacao: object | None = None  # volta do plano para a foto (origem "foto")
+    inclinacao_informada: bool = True
 
 
 def _carregar(nome_arquivo: str) -> list[dict]:

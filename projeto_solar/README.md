@@ -51,6 +51,26 @@ contorno no modo manual.
 Águas com insolação abaixo de `fracao_min_sol` (padrão 75%) da melhor água são
 descartadas (por exemplo, águas voltadas para o sul).
 
+### Com foto de drone e medida de referência (mais precisão)
+
+A foto (vista de cima) dá o contorno real de cada água e dos obstáculos. A Solar API,
+quando informada pelo link do Google Maps, completa a inclinação e a insolação.
+
+1. Abra `ferramenta/marcador_telhado.html` no navegador e carregue a foto.
+2. Marque a escala: clique nas duas pontas de uma medida conhecida e informe os metros
+   (ou digite a escala em m/pixel, se a souber).
+3. Em "Nova água", clique **primeiro nos dois vértices do beiral** (borda mais baixa) e
+   depois nos demais; conclua o polígono. Marque os obstáculos da água selecionada.
+4. Informe o norte da foto (graus no sentido horário a partir do topo) e, se souber,
+   a inclinação de cada água. Em branco, a inclinação vem da Solar API.
+5. Copie o JSON para o campo `"telhado"` do projeto e rode:
+
+   ```bash
+   python -m projeto_solar projeto.json --maps "<link do Google Maps da obra>"
+   ```
+
+Sai também `00_sobreposicao_foto.png`, com os módulos desenhados sobre a foto.
+
 ### Com o telhado medido (modo manual)
 
 Descreva cada água em metros, no próprio plano inclinado (x ao longo da cumeeira,
@@ -68,7 +88,7 @@ Os arquivos saem em `saida/<nome do projeto>/`:
 | Campo | Descrição |
 |---|---|
 | `projeto` | `nome`, `cliente`, `endereco` (vão para o carimbo e o memorial) |
-| `telhado.origem` | `"solar_api"` ou `"manual"` (com `planos`) |
+| `telhado.origem` | `"solar_api"`, `"foto"` (JSON do marcador) ou `"manual"` (com `planos`) |
 | `modulo` | `id` do módulo em `projeto_solar/catalogo/modulos.json` |
 | `inversor.id` / `inversor.quantidade` | `id` em `catalogo/inversores.json`; quantidade `null` = automática pela relação CC/CA alvo |
 | `local` | `temp_min_c`, `temp_max_amb_c` do local da obra |
@@ -86,7 +106,6 @@ temperatura, dimensões; faixa de MPPT, tensão máxima, correntes por MPPT).
 
 - Diagrama multifilar.
 - Inversores com MPPTs de capacidades diferentes, microinversores e otimizadores.
-- Desenho do contorno real do telhado sobre a imagem de satélite (Maps JavaScript API).
 - Integração com o CRM: gerar o projeto a partir do negócio e anexar os arquivos.
 - Formulários e padrões de cada concessionária.
 

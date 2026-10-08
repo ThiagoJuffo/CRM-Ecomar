@@ -34,5 +34,23 @@
     "fases": 3,
     "tensao_ca_v": 380,
     "corrente_ca_max_a": 16.7
+  },
+  {
+    "id": "solplanet-15k-220v",
+    "fabricante": "Solplanet (A CONFIRMAR com o datasheet)",
+    "modelo": "15 kW trifásico 220 V",
+    "potencia_ca_w": 15000,
+    "potencia_cc_max_w": 22500,
+    "vcc_max": 800,
+    "vmppt_min": 140,
+    "vmppt_max": 650,
+    "vpartida": 160,
+    "n_mppt": 3,
+    "strings_por_mppt": 2,
+    "imp_max_por_mppt": 32,
+    "isc_max_por_mppt": 40,
+    "fases": 3,
+    "tensao_ca_v": 220,
+    "corrente_ca_max_a": 39.4
   }
 ]

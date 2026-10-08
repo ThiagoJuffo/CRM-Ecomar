@@ -16,7 +16,8 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("entrada", type=Path, help="arquivo JSON do projeto (veja exemplos/)")
     ap.add_argument("--saida", type=Path, help="pasta de saída (padrão: saida/<nome do projeto>)")
     ap.add_argument("--endereco", help="sobrescreve o endereço e força a Solar API")
-    ap.add_argument("--maps", help="link do Google Maps da obra (usa as coordenadas do local)")
+    ap.add_argument("--maps", help="link do Google Maps da obra (usa as coordenadas do local; "
+                                   "com foto de drone, completa inclinação e insolação)")
     args = ap.parse_args(argv)
 
     entrada = json.loads(args.entrada.read_text(encoding="utf-8"))
@@ -27,8 +28,9 @@ def main(argv: list[str] | None = None) -> None:
         coords = coordenadas_do_link(args.maps)
         if not coords:
             sys.exit("Erro: não encontrei coordenadas no link do Google Maps")
-        entrada["telhado"] = {**entrada.get("telhado", {}), "origem": "solar_api",
-                              "lat": coords[0], "lng": coords[1]}
+        telhado = entrada.get("telhado", {})
+        origem = "foto" if telhado.get("origem") == "foto" else "solar_api"
+        entrada["telhado"] = {**telhado, "origem": origem, "lat": coords[0], "lng": coords[1]}
     nome = entrada.get("projeto", {}).get("nome", args.entrada.stem)
     saida = args.saida or Path("saida") / nome.replace(" ", "_")
 

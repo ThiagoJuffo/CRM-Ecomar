@@ -7,7 +7,7 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from . import eletrico, solar_api, strings
+from . import eletrico, foto, solar_api, strings
 from .desenho import desenhar_paginacao, desenhar_unifilar
 from .modelos import (Inversor, Modulo, PlanoTelhado, carregar_inversor, carregar_modulo,
                       plano_de_dict)
@@ -43,6 +43,23 @@ def obter_planos(entrada: dict) -> tuple[list[PlanoTelhado], dict | None]:
             for p in planos:
                 p.observacoes.append("Imagem da Solar API de qualidade LOW: inclinação e área podem "
                                      "ter erro maior; medir no local antes do projeto executivo.")
+        return planos, insights
+    if telhado.get("origem") == "foto":
+        planos = foto.planos_da_foto(telhado)
+        insights = None
+        if "insights_arquivo" in telhado:
+            insights = json.loads(Path(telhado["insights_arquivo"]).read_text(encoding="utf-8"))
+        elif telhado.get("lat") is not None and telhado.get("lng") is not None:
+            try:
+                insights = _buscar_com_fallback(telhado["lat"], telhado["lng"], telhado.get("qualidade", "HIGH"))
+            except solar_api.ErroSolarApi as e:
+                for p in planos:
+                    p.observacoes.append(f"Solar API indisponível ({e}); usando só a foto.")
+        if insights:
+            foto.completar_com_solar_api(planos, insights)
+        for p in planos:
+            if not p.inclinacao_informada and p.inclinacao_graus == 0:
+                p.observacoes.append("Inclinação não informada nem obtida da Solar API: considerada 0°.")
         return planos, insights
     return [plano_de_dict(p) for p in telhado["planos"]], None
 
@@ -119,6 +136,9 @@ def executar(entrada: dict, pasta_saida: Path) -> Resultado:
     resultado = Resultado(paginacoes, arr, elet, modulo, inv, qtd_inv, arquivos,
                           solar_api.resumo_edificacao(insights) if insights else None)
     arquivos += [pdf.with_suffix(".dxf") for pdf in list(arquivos)]
+    if entrada.get("telhado", {}).get("origem") == "foto":
+        arquivos.append(foto.desenhar_sobreposicao(paginacoes, entrada["telhado"]["foto"],
+                                                   pasta_saida / "00_sobreposicao_foto.png"))
     arquivos.append(escrever_memorial(resultado, dados, pasta_saida / "03_memorial.md"))
     arquivos.append(escrever_json(resultado, pasta_saida / "resultado.json"))
     return resultado

@@ -1,0 +1,365 @@
+<title>Marcador de Telhado Ecomar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: bancada de trabalho — foto à esquerda ocupando o espaço, painel de controle estreito à direita (empilha no celular) */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --line: #d5dce3;
+  --fg: #16212b;
+  --muted: #5b6b79;
+  --accent: #d97a06;      /* âmbar solar: ações e água selecionada */
+  --ref: #0a7ea4;         /* azul: medida de referência */
+  --obst: #c7362b;        /* vermelho: obstáculos */
+  --roof: #f2b705;        /* contorno das águas */
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11171d; --surface: #1a232c; --line: #2c3a46; --fg: #e6edf3; --muted: #93a4b3;
+    --accent: #f59e1b; --ref: #38b6dc; --obst: #f0645a; --roof: #ffd23f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11171d; --surface: #1a232c; --line: #2c3a46; --fg: #e6edf3; --muted: #93a4b3;
+  --accent: #f59e1b; --ref: #38b6dc; --obst: #f0645a; --roof: #ffd23f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.45; padding: 16px; padding-block: 16px 32px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
+h2 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+p { margin: 0; }
+.topo { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.topo p { color: var(--muted); max-width: 70ch; }
+.bancada { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .bancada { grid-template-columns: minmax(0, 1fr); } }
+.palco { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-width: 0; }
+.palco canvas { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: manipulation; border-radius: 4px; background: #000; }
+.status { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding: 6px 4px 0; min-height: 1.6em; }
+.painel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.bloco { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.linha { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.linha label { flex: 1 1 120px; }
+input[type="number"], input[type="text"] { font: inherit; font-family: var(--font-mono); padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); width: 100%; }
+button { font: inherit; font-weight: 500; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button.primario { background: var(--accent); border-color: var(--accent); color: #1b1203; }
+button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.modos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.dica { font-size: 12px; color: var(--muted); }
+.aguas { display: flex; flex-direction: column; gap: 6px; }
+.agua { display: grid; grid-template-columns: minmax(0, 1fr) 70px auto; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--line); border-radius: 6px; }
+.agua.ativa { border-color: var(--accent); }
+.agua .info { font-family: var(--font-mono); font-size: 11px; color: var(--muted); grid-column: 1 / -1; }
+.vazio { font-size: 12px; color: var(--muted); }
+textarea { width: 100%; min-height: 140px; font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); padding: 8px; resize: vertical; }
+.num { font-variant-numeric: tabular-nums; }
+.chip { display: inline-block; font-size: 11px; font-family: var(--font-mono); padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="topo">
+  <h1>Marcador de Telhado</h1>
+  <p>Marque a escala, as águas do telhado e os obstáculos sobre a foto do drone (vista de cima). O JSON gerado entra direto na ferramenta de pré-projeto da Ecomar.</p>
+</header>
+
+<div class="bancada">
+  <section class="palco" aria-label="Foto do telhado">
+    <canvas id="tela" width="800" height="600"></canvas>
+    <div class="status" id="status">Carregando…</div>
+  </section>
+
+  <aside class="painel">
+    <div class="bloco">
+      <h2>Foto</h2>
+      <label>Abrir foto do drone (JPG ou PNG)
+        <input type="file" id="arquivo" accept="image/png,image/jpeg">
+      </label>
+      <label>Nome do arquivo no projeto
+        <input type="text" id="nomeFoto" value="foto_drone.jpg">
+      </label>
+      <label>Norte da foto (graus no sentido horário a partir do topo)
+        <input type="number" id="norte" value="0" step="1">
+      </label>
+    </div>
+
+    <div class="bloco">
+      <h2>Escala</h2>
+      <div class="linha">
+        <label>Medida de referência (m)
+          <input type="number" id="refMetros" value="10" min="0.1" step="0.01">
+        </label>
+        <label>ou escala conhecida (m/pixel)
+          <input type="number" id="escalaDireta" placeholder="ex.: 0.25" min="0" step="0.001">
+        </label>
+      </div>
+      <p class="dica">Clique em <strong>Referência</strong> e marque as duas pontas de algo com medida conhecida (largura do telhado, uma trena no chão, um módulo).</p>
+      <p class="num" id="escalaInfo"><span class="chip">sem escala</span></p>
+    </div>
+
+    <div class="bloco">
+      <h2>Marcação</h2>
+      <div class="modos" role="group" aria-label="Modo de marcação">
+        <button id="modoRef" data-modo="ref">Referência</button>
+        <button id="modoAgua" data-modo="agua">Nova água</button>
+        <button id="modoObst" data-modo="obst">Obstáculo</button>
+      </div>
+      <p class="dica" id="dicaModo">Escolha um modo.</p>
+      <div class="linha">
+        <button id="concluir" class="primario">Concluir polígono</button>
+        <button id="desfazer">Desfazer ponto</button>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <h2>Águas do telhado</h2>
+      <div class="aguas" id="listaAguas"></div>
+      <p class="dica">Inclinação em branco = a ferramenta busca na Solar API (precisa do link do Google Maps da obra).</p>
+    </div>
+
+    <div class="bloco">
+      <h2>Resultado</h2>
+      <textarea id="saida" readonly aria-label="JSON do telhado"></textarea>
+      <div class="linha">
+        <button id="copiar" class="primario">Copiar JSON</button>
+        <span class="dica" id="copiado"></span>
+      </div>
+      <p class="dica">Cole este bloco no campo <code>"telhado"</code> do arquivo do projeto, ou envie para o Claude.</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+// Imagem de exemplo opcional (substituída na versão publicada)
+const IMAGEM_EXEMPLO = null;
+
+const tela = document.getElementById("tela");
+const ctx = tela.getContext("2d");
+const $ = (id) => document.getElementById(id);
+const estado = {
+  img: null, modo: null,
+  ref: [],                 // [[x,y],[x,y]] em pixels da foto
+  aguas: [],               // {nome, inclinacao, pontos:[[x,y]], obstaculos:[[[x,y]]]}
+  ativa: -1,               // água selecionada (recebe obstáculos)
+  rascunho: [],
+};
+
+const DICAS = {
+  ref: "Clique nas duas pontas da medida de referência.",
+  agua: "Clique primeiro nos 2 vértices do beiral (borda mais baixa), depois nos demais. Conclua o polígono.",
+  obst: "Contorne o obstáculo (caixa d'água, claraboia, platibanda) dentro da água selecionada.",
+};
+
+function carregarImagem(src, nome) {
+  const img = new Image();
+  img.onload = () => {
+    estado.img = img;
+    tela.width = img.naturalWidth; tela.height = img.naturalHeight;
+    if (nome) $("nomeFoto").value = nome;
+    desenhar(); atualizar();
+  };
+  img.src = src;
+}
+
+function escala() {
+  const direta = parseFloat($("escalaDireta").value);
+  if (direta > 0) return direta;
+  if (estado.ref.length === 2) {
+    const [[x1, y1], [x2, y2]] = estado.ref;
+    const d = Math.hypot(x2 - x1, y2 - y1);
+    const m = parseFloat($("refMetros").value);
+    if (d > 0 && m > 0) return m / d;
+  }
+  return null;
+}
+
+function areaPx(pts) {
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+    a += x1 * y2 - x2 * y1;
+  }
+  return Math.abs(a) / 2;
+}
+
+function pontoDoEvento(ev) {
+  const r = tela.getBoundingClientRect();
+  return [Math.round((ev.clientX - r.left) * tela.width / r.width), Math.round((ev.clientY - r.top) * tela.height / r.height)];
+}
+
+function cor(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+
+function poligono(pts, traco, preenchimento, fechar = true) {
+  if (!pts.length) return;
+  ctx.beginPath(); ctx.moveTo(...pts[0]);
+  pts.slice(1).forEach((p) => ctx.lineTo(...p));
+  if (fechar) ctx.closePath();
+  if (preenchimento) { ctx.fillStyle = preenchimento; ctx.fill(); }
+  ctx.strokeStyle = traco; ctx.stroke();
+}
+
+function desenhar() {
+  const lw = Math.max(1.5, tela.width / 500);
+  ctx.clearRect(0, 0, tela.width, tela.height);
+  if (estado.img) ctx.drawImage(estado.img, 0, 0);
+  ctx.lineWidth = lw;
+  estado.aguas.forEach((a, i) => {
+    poligono(a.pontos, i === estado.ativa ? cor("--accent") : cor("--roof"), "rgba(242,183,5,0.18)");
+    if (a.pontos.length >= 2) { // beiral em destaque
+      ctx.save(); ctx.lineWidth = lw * 3; ctx.strokeStyle = cor("--accent");
+      ctx.beginPath(); ctx.moveTo(...a.pontos[0]); ctx.lineTo(...a.pontos[1]); ctx.stroke(); ctx.restore();
+    }
+    a.obstaculos.forEach((o) => poligono(o, cor("--obst"), "rgba(199,54,43,0.35)"));
+    const cx = a.pontos.reduce((s, p) => s + p[0], 0) / a.pontos.length;
+    const cy = a.pontos.reduce((s, p) => s + p[1], 0) / a.pontos.length;
+    ctx.font = `600 ${Math.max(12, tela.width / 45)}px ${getComputedStyle(document.body).fontFamily}`;
+    ctx.textAlign = "center"; ctx.fillStyle = "#fff"; ctx.strokeStyle = "rgba(0,0,0,.7)"; ctx.lineWidth = 3;
+    ctx.strokeText(a.nome, cx, cy); ctx.fillText(a.nome, cx, cy); ctx.lineWidth = lw;
+  });
+  if (estado.ref.length) {
+    ctx.strokeStyle = cor("--ref"); ctx.fillStyle = cor("--ref");
+    poligono(estado.ref, cor("--ref"), null, false);
+    estado.ref.forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, lw * 2.5, 0, 7); ctx.fill(); });
+  }
+  if (estado.rascunho.length) {
+    const c = estado.modo === "obst" ? cor("--obst") : cor("--accent");
+    poligono(estado.rascunho, c, null, false);
+    ctx.fillStyle = c;
+    estado.rascunho.forEach(([x, y], i) => { ctx.beginPath(); ctx.arc(x, y, lw * (i < 2 && estado.modo === "agua" ? 3.5 : 2.5), 0, 7); ctx.fill(); });
+  }
+}
+
+function definirModo(m) {
+  estado.modo = m; estado.rascunho = [];
+  document.querySelectorAll("[data-modo]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.modo === m)));
+  $("dicaModo").textContent = DICAS[m] || "Escolha um modo.";
+  if (m === "ref") estado.ref = [];
+  if (m === "obst" && estado.ativa < 0) $("dicaModo").textContent = "Selecione antes a água que tem o obstáculo.";
+  desenhar(); atualizar();
+}
+
+tela.addEventListener("click", (ev) => {
+  if (!estado.img || !estado.modo) return;
+  const p = pontoDoEvento(ev);
+  if (estado.modo === "ref") {
+    estado.ref.push(p);
+    if (estado.ref.length === 2) { estado.modo = null; definirModo(null); }
+  } else {
+    estado.rascunho.push(p);
+  }
+  desenhar(); atualizar();
+});
+
+$("concluir").addEventListener("click", () => {
+  if (estado.rascunho.length < 3) { $("status").textContent = "Marque pelo menos 3 pontos para fechar o polígono."; return; }
+  if (estado.modo === "agua") {
+    estado.aguas.push({ nome: `Água ${estado.aguas.length + 1}`, inclinacao: null, pontos: estado.rascunho, obstaculos: [] });
+    estado.ativa = estado.aguas.length - 1;
+  } else if (estado.modo === "obst" && estado.ativa >= 0) {
+    estado.aguas[estado.ativa].obstaculos.push(estado.rascunho);
+  }
+  estado.rascunho = [];
+  desenhar(); atualizar();
+});
+
+$("desfazer").addEventListener("click", () => {
+  if (estado.rascunho.length) estado.rascunho.pop();
+  else if (estado.modo === "ref") estado.ref.pop();
+  desenhar(); atualizar();
+});
+
+document.querySelectorAll("[data-modo]").forEach((b) => b.addEventListener("click", () => definirModo(b.dataset.modo)));
+["refMetros", "escalaDireta", "norte", "nomeFoto"].forEach((id) => $(id).addEventListener("input", atualizar));
+
+$("arquivo").addEventListener("change", (ev) => {
+  const f = ev.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { estado.ref = []; estado.aguas = []; estado.ativa = -1; carregarImagem(r.result, f.name); };
+  r.readAsDataURL(f);
+});
+
+function renderLista() {
+  const lista = $("listaAguas");
+  lista.textContent = "";
+  if (!estado.aguas.length) { lista.innerHTML = '<p class="vazio">Nenhuma água marcada ainda. Use “Nova água”.</p>'; return; }
+  const s = escala();
+  estado.aguas.forEach((a, i) => {
+    const div = document.createElement("div");
+    div.className = "agua" + (i === estado.ativa ? " ativa" : "");
+    const nome = document.createElement("input");
+    nome.type = "text"; nome.value = a.nome; nome.id = `agua-nome-${i}`; nome.setAttribute("aria-label", "Nome da água");
+    nome.addEventListener("input", () => { a.nome = nome.value; desenhar(); gerarJson(); });
+    nome.addEventListener("focus", () => { estado.ativa = i; desenhar(); marcarAtiva(); });
+    const inc = document.createElement("input");
+    inc.type = "number"; inc.placeholder = "incl. °"; inc.step = "0.5"; inc.id = `agua-inc-${i}`;
+    inc.setAttribute("aria-label", "Inclinação em graus"); inc.value = a.inclinacao ?? "";
+    inc.addEventListener("input", () => { a.inclinacao = inc.value === "" ? null : parseFloat(inc.value); gerarJson(); });
+    const del = document.createElement("button");
+    del.textContent = "Remover"; del.setAttribute("aria-label", `Remover ${a.nome}`);
+    del.addEventListener("click", () => { estado.aguas.splice(i, 1); estado.ativa = Math.min(estado.ativa, estado.aguas.length - 1); desenhar(); atualizar(); });
+    const info = document.createElement("div");
+    info.className = "info num";
+    const area = s ? (areaPx(a.pontos) * s * s).toFixed(1) + " m² em planta" : "defina a escala para ver a área";
+    info.textContent = `${a.pontos.length} vértices · ${a.obstaculos.length} obstáculo(s) · ${area}`;
+    div.append(nome, inc, del, info);
+    lista.append(div);
+  });
+}
+
+function marcarAtiva() {
+  document.querySelectorAll(".agua").forEach((el, i) => el.classList.toggle("ativa", i === estado.ativa));
+}
+
+function gerarJson() {
+  const s = escala();
+  const direta = parseFloat($("escalaDireta").value) > 0;
+  const telhado = {
+    origem: "foto",
+    foto: $("nomeFoto").value || "foto_drone.jpg",
+    referencia: direta
+      ? { p1: [0, 0], p2: [100, 0], metros: +(100 * s).toFixed(4) }
+      : estado.ref.length === 2 ? { p1: estado.ref[0], p2: estado.ref[1], metros: parseFloat($("refMetros").value) } : null,
+    norte_graus: parseFloat($("norte").value) || 0,
+    planos: estado.aguas.map((a) => {
+      const p = { nome: a.nome, poligono_px: a.pontos, obstaculos_px: a.obstaculos };
+      if (a.inclinacao !== null && !Number.isNaN(a.inclinacao)) p.inclinacao = a.inclinacao;
+      return p;
+    }),
+  };
+  $("saida").value = JSON.stringify(telhado, (k, v) => Array.isArray(v) && v.length === 2 && typeof v[0] === "number" ? `[${v[0]}, ${v[1]}]` : v, 2)
+    .replace(/"\[(-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?)\]"/g, "[$1, $2]");
+}
+
+function atualizar() {
+  const s = escala();
+  $("escalaInfo").innerHTML = s
+    ? `<span class="chip">${s.toFixed(4)} m/pixel</span> <span class="dica">foto ≈ ${(tela.width * s).toFixed(1)} × ${(tela.height * s).toFixed(1)} m</span>`
+    : '<span class="chip">sem escala</span>';
+  const pontos = estado.rascunho.length;
+  $("status").textContent = !estado.img ? "Abra uma foto para começar."
+    : estado.modo === "ref" ? `Referência: ${estado.ref.length}/2 pontos`
+    : estado.modo ? `${pontos} ponto(s) no polígono atual${estado.modo === "agua" && pontos < 2 ? " · comece pelo beiral" : ""}`
+    : `${estado.aguas.length} água(s) marcada(s)`;
+  renderLista(); gerarJson();
+}
+
+$("copiar").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("saida").value); $("copiado").textContent = "Copiado."; }
+  catch { $("saida").select(); $("copiado").textContent = "Selecionado: use Ctrl+C."; }
+});
+
+if (IMAGEM_EXEMPLO) {
+  carregarImagem(IMAGEM_EXEMPLO.src, IMAGEM_EXEMPLO.nome);
+  if (IMAGEM_EXEMPLO.escala) $("escalaDireta").value = IMAGEM_EXEMPLO.escala;
+} else {
+  tela.width = 800; tela.height = 450;
+  ctx.fillStyle = cor("--surface"); ctx.fillRect(0, 0, 800, 450);
+  atualizar();
+}
+definirModo(null);
+</script>

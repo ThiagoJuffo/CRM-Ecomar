@@ -30,5 +30,21 @@
     "largura_m": 1.134,
     "fusivel_serie_max_a": 30,
     "tensao_max_sistema_v": 1500
+  },
+  {
+    "id": "generico-620",
+    "fabricante": "A CONFIRMAR (valores típicos de TOPCon 620 W)",
+    "modelo": "Módulo 620 W",
+    "potencia_w": 620,
+    "voc": 55.6,
+    "vmp": 46.1,
+    "isc": 14.2,
+    "imp": 13.45,
+    "coef_voc": -0.25,
+    "coef_pmax": -0.29,
+    "comprimento_m": 2.382,
+    "largura_m": 1.134,
+    "fusivel_serie_max_a": 30,
+    "tensao_max_sistema_v": 1500
   }
 ]

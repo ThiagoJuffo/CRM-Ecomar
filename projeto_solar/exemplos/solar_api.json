@@ -1,0 +1,13 @@
+{
+  "projeto": {
+    "nome": "Teste Solar API",
+    "cliente": "Cliente Exemplo",
+    "endereco": "Av. Paulista, 1000 - Sao Paulo/SP"
+  },
+  "telhado": {"origem": "solar_api", "qualidade": "HIGH"},
+  "modulo": "exemplo-550",
+  "inversor": {"id": "exemplo-10k-tri", "quantidade": null},
+  "local": {"temp_min_c": 5, "temp_max_amb_c": 36},
+  "eletrico": {"comprimento_cc_m": 25, "comprimento_ca_m": 15},
+  "parametros": {"fracao_min_sol": 0.75, "max_modulos": null}
+}

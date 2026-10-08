@@ -1,0 +1,28 @@
+{
+  "projeto": {
+    "nome": "Residencia Exemplo",
+    "cliente": "Cliente Exemplo",
+    "endereco": "Rua Exemplo, 100 - Sao Paulo/SP"
+  },
+  "telhado": {
+    "origem": "manual",
+    "planos": [
+      {
+        "nome": "Agua Norte",
+        "inclinacao": 17,
+        "azimute": 0,
+        "horas_sol_ano": 1650,
+        "poligono": [[0, 0], [12, 0], [12, 6], [0, 6]],
+        "obstaculos": [[[7.5, 2.0], [9.0, 2.0], [9.0, 3.5], [7.5, 3.5]]]
+      }
+    ]
+  },
+  "modulo": "exemplo-550",
+  "inversor": {"id": "exemplo-10k-tri", "quantidade": null},
+  "local": {"temp_min_c": 5, "temp_max_amb_c": 36},
+  "eletrico": {"comprimento_cc_m": 25, "comprimento_ca_m": 15},
+  "parametros": {
+    "paginacao": {"recuo_borda_m": 0.3, "afastamento_obstaculo_m": 0.3},
+    "max_modulos": null
+  }
+}

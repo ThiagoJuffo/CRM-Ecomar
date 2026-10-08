@@ -1,0 +1,50 @@
+[
+  {
+    "id": "exemplo-550",
+    "fabricante": "Genérico (EXEMPLO - substituir pelo datasheet real)",
+    "modelo": "Mono PERC 144 células 550 W",
+    "potencia_w": 550,
+    "voc": 49.6,
+    "vmp": 41.7,
+    "isc": 14.0,
+    "imp": 13.2,
+    "coef_voc": -0.27,
+    "coef_pmax": -0.35,
+    "comprimento_m": 2.279,
+    "largura_m": 1.134,
+    "fusivel_serie_max_a": 25,
+    "tensao_max_sistema_v": 1500
+  },
+  {
+    "id": "exemplo-610-topcon",
+    "fabricante": "Genérico (EXEMPLO - substituir pelo datasheet real)",
+    "modelo": "N-type TOPCon bifacial 610 W",
+    "potencia_w": 610,
+    "voc": 53.6,
+    "vmp": 44.8,
+    "isc": 14.5,
+    "imp": 13.6,
+    "coef_voc": -0.25,
+    "coef_pmax": -0.29,
+    "comprimento_m": 2.382,
+    "largura_m": 1.134,
+    "fusivel_serie_max_a": 30,
+    "tensao_max_sistema_v": 1500
+  },
+  {
+    "id": "generico-620",
+    "fabricante": "A CONFIRMAR (valores típicos de TOPCon 620 W)",
+    "modelo": "Módulo 620 W",
+    "potencia_w": 620,
+    "voc": 55.6,
+    "vmp": 46.1,
+    "isc": 14.2,
+    "imp": 13.45,
+    "coef_voc": -0.25,
+    "coef_pmax": -0.29,
+    "comprimento_m": 2.382,
+    "largura_m": 1.134,
+    "fusivel_serie_max_a": 30,
+    "tensao_max_sistema_v": 1500
+  }
+]

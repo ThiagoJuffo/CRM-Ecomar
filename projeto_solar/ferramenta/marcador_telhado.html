@@ -150,8 +150,8 @@ const estado = {
 
 const DICAS = {
   ref: "Clique nas duas pontas da medida de referência.",
-  agua: "Clique primeiro nos 2 vértices do beiral (borda mais baixa), depois nos demais. Conclua o polígono.",
-  obst: "Contorne o obstáculo (caixa d'água, claraboia, platibanda) dentro da água selecionada.",
+  agua: "Clique primeiro nos 2 vértices do beiral (borda mais baixa), depois nos demais. Para fechar, clique de novo no primeiro ponto ou em “Concluir polígono”.",
+  obst: "Contorne o obstáculo (caixa d'água, claraboia, platibanda) dentro da água selecionada e feche clicando no primeiro ponto.",
 };
 
 function carregarImagem(src, nome) {
@@ -249,12 +249,18 @@ tela.addEventListener("click", (ev) => {
     estado.ref.push(p);
     if (estado.ref.length === 2) { estado.modo = null; definirModo(null); }
   } else {
-    estado.rascunho.push(p);
+    const r = estado.rascunho;
+    const raio = Math.max(10, tela.width / 80);
+    if (r.length >= 3 && Math.hypot(p[0] - r[0][0], p[1] - r[0][1]) < raio) { concluir(); return; }
+    r.push(p);
   }
   desenhar(); atualizar();
 });
 
-$("concluir").addEventListener("click", () => {
+$("concluir").addEventListener("click", () => concluir());
+
+function concluir() {
+  if (!estado.modo || estado.modo === "ref") { $("status").textContent = "Escolha “Nova água” ou “Obstáculo” antes de marcar pontos."; return; }
   if (estado.rascunho.length < 3) { $("status").textContent = "Marque pelo menos 3 pontos para fechar o polígono."; return; }
   if (estado.modo === "agua") {
     estado.aguas.push({ nome: `Água ${estado.aguas.length + 1}`, inclinacao: null, pontos: estado.rascunho, obstaculos: [] });
@@ -264,7 +270,7 @@ $("concluir").addEventListener("click", () => {
   }
   estado.rascunho = [];
   desenhar(); atualizar();
-});
+}
 
 $("desfazer").addEventListener("click", () => {
   if (estado.rascunho.length) estado.rascunho.pop();
@@ -349,6 +355,8 @@ function atualizar() {
 }
 
 $("copiar").addEventListener("click", async () => {
+  if (estado.rascunho.length) { $("copiado").textContent = "Há um polígono aberto: clique em “Concluir polígono” antes de copiar."; return; }
+  if (!estado.aguas.length) { $("copiado").textContent = "Nenhuma água marcada: use “Nova água” e contorne o telhado."; return; }
   try { await navigator.clipboard.writeText($("saida").value); $("copiado").textContent = "Copiado."; }
   catch { $("saida").select(); $("copiado").textContent = "Selecionado: use Ctrl+C."; }
 });

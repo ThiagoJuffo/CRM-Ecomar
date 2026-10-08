@@ -76,6 +76,9 @@ def paginar_plano(plano: PlanoTelhado, modulo: Modulo,
     p = p or ParametrosPaginacao()
     util = area_util(plano, p)
     melhor = Paginacao(plano=plano, orientacao="-", area_util=util)
+    invalidas = set(p.orientacoes) - {"retrato", "paisagem"}
+    if invalidas:
+        raise ValueError(f"Orientação inválida: {', '.join(invalidas)} (use 'retrato' e/ou 'paisagem')")
     for orientacao in p.orientacoes:
         if orientacao == "retrato":
             w, h = modulo.largura_m, modulo.comprimento_m

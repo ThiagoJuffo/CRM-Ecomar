@@ -66,6 +66,7 @@ class PlanoTelhado:
     observacoes: list[str] = field(default_factory=list)
     transformacao: object | None = None  # volta do plano para a foto (origem "foto")
     inclinacao_informada: bool = True
+    fonte_foto: tuple | None = None  # (dados marcados, escala m/px, norte) quando veio da foto
 
 
 def _carregar(nome_arquivo: str) -> list[dict]:

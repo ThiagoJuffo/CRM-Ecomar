@@ -7,7 +7,7 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from . import eletrico, foto, solar_api, strings
+from . import eletrico, foto, solar_api, strings, telhado_auto
 from .desenho import desenhar_paginacao, desenhar_unifilar
 from .modelos import (Inversor, Modulo, PlanoTelhado, carregar_inversor, carregar_modulo,
                       plano_de_dict)
@@ -28,7 +28,7 @@ class Resultado:
     edificacao: dict | None = None
 
 
-def obter_planos(entrada: dict) -> tuple[list[PlanoTelhado], dict | None]:
+def obter_planos(entrada: dict) -> tuple[list[PlanoTelhado], dict | None, object | None]:
     telhado = entrada.get("telhado", {})
     if telhado.get("origem") == "solar_api":
         if "insights_arquivo" in telhado:  # resposta já salva (testes / reprocessamento)
@@ -38,12 +38,23 @@ def obter_planos(entrada: dict) -> tuple[list[PlanoTelhado], dict | None]:
             if lat is None or lng is None:
                 lat, lng = solar_api.geocodificar(entrada["projeto"]["endereco"])
             insights = _buscar_com_fallback(lat, lng, telhado.get("qualidade", "HIGH"))
+            if telhado.get("contorno", "auto") == "auto":
+                try:
+                    camadas = telhado_auto.baixar_camadas(lat, lng)
+                    planos = telhado_auto.planos_automaticos(camadas)
+                    if planos:
+                        return planos, insights, camadas
+                except Exception as e:  # sem camadas: cai no retângulo equivalente
+                    insights.setdefault("_avisos", []).append(f"Marcação automática indisponível: {e}")
         planos = solar_api.planos_do_telhado(insights)
+        for aviso in insights.get("_avisos", []):
+            for p in planos:
+                p.observacoes.append(aviso)
         if insights.get("imageryQuality") == "LOW":
             for p in planos:
                 p.observacoes.append("Imagem da Solar API de qualidade LOW: inclinação e área podem "
                                      "ter erro maior; medir no local antes do projeto executivo.")
-        return planos, insights
+        return planos, insights, None
     if telhado.get("origem") == "foto":
         planos = foto.planos_da_foto(telhado)
         insights = None
@@ -56,12 +67,12 @@ def obter_planos(entrada: dict) -> tuple[list[PlanoTelhado], dict | None]:
                 for p in planos:
                     p.observacoes.append(f"Solar API indisponível ({e}); usando só a foto.")
         if insights:
-            foto.completar_com_solar_api(planos, insights)
+            planos = foto.completar_com_solar_api(planos, insights)
         for p in planos:
             if not p.inclinacao_informada and p.inclinacao_graus == 0:
                 p.observacoes.append("Inclinação não informada nem obtida da Solar API: considerada 0°.")
-        return planos, insights
-    return [plano_de_dict(p) for p in telhado["planos"]], None
+        return planos, insights, None
+    return [plano_de_dict(p) for p in telhado["planos"]], None, None
 
 
 def _buscar_com_fallback(lat: float, lng: float, qualidade: str) -> dict:
@@ -106,7 +117,7 @@ def executar(entrada: dict, pasta_saida: Path) -> Resultado:
     cond = strings.CondicoesLocais(**entrada.get("local", {}))
     p_ele = eletrico.ParametrosEletricos(**entrada.get("eletrico", {}))
 
-    planos, insights = obter_planos(entrada)
+    planos, insights, camadas = obter_planos(entrada)
     planos = _selecionar_planos(planos, parametros.get("fracao_min_sol", 0.75))
     paginacoes = [paginar_plano(p, modulo, p_pag) for p in planos]
     paginacoes = [pg for pg in paginacoes if pg.quantidade]
@@ -138,6 +149,10 @@ def executar(entrada: dict, pasta_saida: Path) -> Resultado:
     arquivos += [pdf.with_suffix(".dxf") for pdf in list(arquivos)]
     if entrada.get("telhado", {}).get("origem") == "foto":
         arquivos.append(foto.desenhar_sobreposicao(paginacoes, entrada["telhado"]["foto"],
+                                                   pasta_saida / "00_sobreposicao_foto.png"))
+    elif camadas is not None:
+        imagem = telhado_auto.salvar_foto(camadas, pasta_saida / "imagem_aerea.png")
+        arquivos.append(foto.desenhar_sobreposicao(paginacoes, str(imagem),
                                                    pasta_saida / "00_sobreposicao_foto.png"))
     arquivos.append(escrever_memorial(resultado, dados, pasta_saida / "03_memorial.md"))
     arquivos.append(escrever_json(resultado, pasta_saida / "resultado.json"))

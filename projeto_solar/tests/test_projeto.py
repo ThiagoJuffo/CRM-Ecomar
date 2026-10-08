@@ -164,3 +164,19 @@ def test_fluxo_com_foto_e_solar_api(tmp_path):
     assert plano.horas_sol_ano == 1650
     assert (tmp_path / "00_sobreposicao_foto.png").stat().st_size > 0
     assert res.arranjo.modulos_usados > 0
+
+
+def test_beiral_marcado_errado_e_corrigido_pela_solar_api(tmp_path):
+    from projeto_solar import foto
+    # telhado 600 x 300 px; marcado começando pela borda lateral (beiral errado)
+    d = {"nome": "A", "poligono_px": [[50, 50], [50, 350], [650, 350], [650, 50]]}
+    plano = foto.plano_da_foto(d, 0.02)
+    assert plano.azimute_graus == pytest.approx(270.0)  # leitura literal: cai para oeste
+    insights = json.loads((DADOS / "building_insights_exemplo.json").read_text(encoding="utf-8"))
+    corrigido = foto.completar_com_solar_api([plano], insights)[0]
+    # a maior água do fixture cai para o norte (0°): beiral passa a ser a borda de cima
+    assert corrigido.azimute_graus == pytest.approx(0.0)
+    assert corrigido.inclinacao_graus == 17
+    minx, miny, maxx, maxy = corrigido.poligono.bounds
+    assert maxx - minx == pytest.approx(12.0)
+    assert any("caimento" in o for o in corrigido.observacoes)

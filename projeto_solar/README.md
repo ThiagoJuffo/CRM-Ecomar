@@ -43,15 +43,22 @@ pip install -e ".[test]"
    python -m projeto_solar exemplos/solar_api.json --maps "https://www.google.com/maps/place/...!3d-20.19!4d-40.25"
    ```
 
-A Solar API devolve, para cada água do telhado, inclinação, azimute, área e insolação
-anual. Ela **não** devolve o contorno exato nem os obstáculos: a ferramenta monta um
+Com o link do Google Maps (ou lat/lng), a ferramenta **marca o telhado sozinha** pelas
+camadas de dados da Solar API: separa as águas pela elevação (DSM), fica só com o prédio
+do ponto, detecta módulos já instalados (de vizinhos, por exemplo) e os trata como
+obstáculo, e alinha o beiral com as paredes do prédio. Gera `00_sobreposicao_foto.png`
+para conferência. Para usar só o retângulo equivalente, ponha `"contorno": "retangulo"`
+no campo `telhado`.
+
+Sem as camadas, a Solar API devolve, para cada água do telhado, inclinação, azimute,
+área e insolação anual. Ela **não** devolve o contorno exato nem os obstáculos: a ferramenta monta um
 retângulo equivalente. Confirme as medidas na visita técnica e, se precisar, ajuste o
 contorno no modo manual.
 
 Águas com insolação abaixo de `fracao_min_sol` (padrão 75%) da melhor água são
 descartadas (por exemplo, águas voltadas para o sul).
 
-### Com foto de drone e medida de referência (mais precisão)
+### Com foto de drone e medida de referência (etapa 2)
 
 A foto (vista de cima) dá o contorno real de cada água e dos obstáculos. A Solar API,
 quando informada pelo link do Google Maps, completa a inclinação e a insolação.
@@ -93,7 +100,7 @@ Os arquivos saem em `saida/<nome do projeto>/`:
 | `inversor.id` / `inversor.quantidade` | `id` em `catalogo/inversores.json`; quantidade `null` = automática pela relação CC/CA alvo |
 | `local` | `temp_min_c`, `temp_max_amb_c` do local da obra |
 | `eletrico` | `comprimento_cc_m`, `comprimento_ca_m`, `queda_max_cc_pct`, `queda_max_ca_pct` |
-| `parametros.paginacao` | `recuo_borda_m`, `afastamento_obstaculo_m`, folgas entre módulos |
+| `parametros.paginacao` | `recuo_borda_m`, `afastamento_obstaculo_m`, folgas entre módulos, `orientacoes` (`["retrato"]`, `["paisagem"]` ou as duas) |
 | `parametros.max_modulos` | limita a quantidade pela potência que o cliente contratou |
 
 ## Catálogo de equipamentos

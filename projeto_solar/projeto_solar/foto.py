@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-from shapely.affinity import scale, translate
+from shapely.affinity import translate
 from shapely.geometry import Polygon
 
 from .modelos import PlanoTelhado
@@ -41,18 +41,47 @@ def escala(referencia: dict) -> float:
     return referencia["metros"] / distancia_px
 
 
-def plano_da_foto(d: dict, escala_m_px: float, norte_graus: float = 0.0) -> PlanoTelhado:
-    """Converte uma água marcada em pixels para o plano inclinado em metros."""
+def _orientacao(pts: np.ndarray, azimute_foto: float | None):
+    """Direções u (ao longo do beiral) e n (sobe a inclinação) e o ponto de origem.
+
+    Sem azimute, o beiral são os dois primeiros vértices. Com azimute (rumo da queda
+    d'água na foto), o beiral é a borda do polígono mais perpendicular a ele.
+    """
+    if azimute_foto is None:
+        p0, p1 = pts[0], pts[1]
+        u = (p1 - p0) / np.linalg.norm(p1 - p0)
+        n = np.array([-u[1], u[0]])
+        if np.dot(pts.mean(axis=0) - p0, n) < 0:  # n precisa apontar para dentro da água
+            u, n = -u, -n
+        return u, n, p0
+    queda = np.array([math.sin(math.radians(azimute_foto)), math.cos(math.radians(azimute_foto))])
+    n = -queda
+    u = np.array([n[1], -n[0]])
+    bordas = [(b - a) / np.linalg.norm(b - a) for a, b in zip(pts, np.roll(pts, -1, axis=0))
+              if np.linalg.norm(b - a) > 1e-9]
+    borda = max(bordas, key=lambda e: abs(e @ u))
+    # o caimento da Solar API é a média da água; as paredes marcadas são mais confiáveis
+    if abs(borda @ u) >= math.cos(math.radians(35)):  # alinha com a parede real
+        u = borda if borda @ u > 0 else -borda
+        n = np.array([-u[1], u[0]])
+    return u, n, pts[np.argmin(pts @ n)]
+
+
+def plano_da_foto(d: dict, escala_m_px: float, norte_graus: float = 0.0,
+                  azimute: float | None = None, inclinacao: float | None = None) -> PlanoTelhado:
+    """Converte uma água marcada em pixels para o plano inclinado em metros.
+
+    azimute/inclinacao, quando passados (ex.: medidos pela Solar API), substituem o
+    beiral marcado e a inclinação informada.
+    """
     pts = np.array([(x * escala_m_px, -y * escala_m_px) for x, y in d["poligono_px"]])
     if len(pts) < 3:
         raise ValueError(f"{d['nome']}: o polígono precisa de pelo menos 3 vértices")
-    p0, p1 = pts[0], pts[1]  # beiral
-    u = (p1 - p0) / np.linalg.norm(p1 - p0)
-    n = np.array([-u[1], u[0]])
-    if np.dot(pts.mean(axis=0) - p0, n) < 0:  # n precisa apontar para dentro da água
-        u, n = -u, -n
+    u, n, p0 = _orientacao(pts, None if azimute is None else azimute + norte_graus)
 
-    inclinacao = d.get("inclinacao")
+    informada = d.get("inclinacao")
+    if inclinacao is None:
+        inclinacao = informada
     cos_i = math.cos(math.radians(inclinacao or 0.0))
 
     def local(p):
@@ -69,19 +98,18 @@ def plano_da_foto(d: dict, escala_m_px: float, norte_graus: float = 0.0) -> Plan
 
     # azimute da queda d'água (-n), corrigido pela direção do norte na foto
     rumo_foto = math.degrees(math.atan2(-n[0], -n[1]))
-    azimute = (rumo_foto - norte_graus) % 360
-
     plano = PlanoTelhado(
         nome=d["nome"],
-        inclinacao_graus=inclinacao if inclinacao is not None else 0.0,
-        azimute_graus=round(azimute, 1),
+        inclinacao_graus=round(inclinacao, 1) if inclinacao is not None else 0.0,
+        azimute_graus=round((rumo_foto - norte_graus) % 360, 1),
         poligono=poligono,
         obstaculos=obstaculos,
         horas_sol_ano=d.get("horas_sol_ano"),
         origem="foto",
     )
     plano.transformacao = Transformacao(escala_m_px, p0, u, n, cos_i, desloc)
-    plano.inclinacao_informada = inclinacao is not None
+    plano.inclinacao_informada = informada is not None
+    plano.fonte_foto = (d, escala_m_px, norte_graus)
     return plano
 
 
@@ -90,38 +118,39 @@ def planos_da_foto(telhado: dict) -> list[PlanoTelhado]:
     return [plano_da_foto(p, s, telhado.get("norte_graus", 0.0)) for p in telhado["planos"]]
 
 
-def completar_com_solar_api(planos: list[PlanoTelhado], insights: dict) -> None:
-    """Preenche inclinação e insolação das águas da foto com o segmento da Solar API
-    de azimute mais próximo. O contorno continua sendo o da foto (mais preciso)."""
+def _diferenca(a: float, b: float) -> float:
+    return abs((a - b + 180) % 360 - 180)
+
+
+def completar_com_solar_api(planos: list[PlanoTelhado], insights: dict) -> list[PlanoTelhado]:
+    """Completa as águas da foto com a Solar API: inclinação, insolação e, se o beiral
+    marcado não bater com nenhuma água do Google, o caimento medido pela elevação.
+    O contorno continua sendo o da foto (mais preciso). Devolve a nova lista."""
     segmentos = insights.get("solarPotential", {}).get("roofSegmentStats", [])
     if not segmentos:
-        return
+        return planos
+    resultado = []
     for p in planos:
-        seg = min(segmentos, key=lambda s: abs((s.get("azimuthDegrees", 0) - p.azimute_graus + 180) % 360 - 180))
-        diferenca = abs((seg.get("azimuthDegrees", 0) - p.azimute_graus + 180) % 360 - 180)
-        if diferenca > 30:
-            p.observacoes.append(f"Nenhuma água da Solar API com azimute próximo ({diferenca:.0f}° de diferença): "
-                                 "conferir o norte da foto.")
-            continue
+        d, escala_m_px, norte = p.fonte_foto
+        seg = min(segmentos, key=lambda s: _diferenca(s.get("azimuthDegrees", 0), p.azimute_graus))
+        avisos = list(p.observacoes)
+        azimute = None
+        if _diferenca(seg.get("azimuthDegrees", 0), p.azimute_graus) > 30:
+            # beiral marcado provavelmente na borda errada: usa a maior água do Google
+            seg = max(segmentos, key=lambda s: s["stats"]["areaMeters2"])
+            azimute = seg.get("azimuthDegrees", 0)
+            avisos.append(f"O beiral marcado indica caimento para {p.azimute_graus:.0f}°, mas a elevação da "
+                          f"Solar API indica {azimute:.0f}°; usado o caimento da Solar API.")
+        inclinacao = None if p.inclinacao_informada else seg.get("pitchDegrees", 0.0)
+        novo = plano_da_foto(d, escala_m_px, norte, azimute=azimute, inclinacao=inclinacao)
         quantis = seg["stats"].get("sunshineQuantiles") or []
-        if p.horas_sol_ano is None and quantis:
-            p.horas_sol_ano = round(quantis[len(quantis) // 2])
-        if not p.inclinacao_informada:
-            novo = plano_da_foto_com_inclinacao(p, seg.get("pitchDegrees", 0.0))
-            p.poligono, p.obstaculos, p.transformacao = novo
-            p.inclinacao_graus = round(seg.get("pitchDegrees", 0.0), 1)
-            p.observacoes.append("Inclinação obtida da Solar API; confirmar no local.")
-
-
-def plano_da_foto_com_inclinacao(p: PlanoTelhado, inclinacao: float):
-    """Reestica o eixo da inclinação de um plano que foi criado com inclinação 0."""
-    t = p.transformacao
-    fator = 1 / math.cos(math.radians(inclinacao))
-    # o plano veio com inclinação 0 (cos = 1); só o eixo y muda
-    poligono = scale(p.poligono, 1, fator, origin=(0, 0))
-    obstaculos = [scale(o, 1, fator, origin=(0, 0)) for o in p.obstaculos]
-    nova = Transformacao(t.escala_m_px, t.origem, t.u, t.n, math.cos(math.radians(inclinacao)), t.deslocamento_x)
-    return poligono, obstaculos, nova
+        if novo.horas_sol_ano is None and quantis:
+            novo.horas_sol_ano = round(quantis[len(quantis) // 2])
+        if inclinacao is not None:
+            avisos.append("Inclinação obtida da Solar API; confirmar no local.")
+        novo.observacoes = avisos
+        resultado.append(novo)
+    return resultado
 
 
 def desenhar_sobreposicao(paginacoes, caminho_foto: str, caminho: Path) -> Path:

@@ -67,7 +67,21 @@ def test_strings_nao_misturam_planos_e_respeitam_corrente(modulo):
         assert m.strings * modulo.isc <= inv.isc_max_por_mppt
         if m.strings:
             assert arr.limites.n_min <= m.modulos_por_string <= arr.limites.n_max
-    assert arr.modulos_usados == 23
+    # cada MPPT recebe no máximo metade da potência CC máx. (15 kWp / 2 = 13 módulos)
+    for m in arr.mppts:
+        assert m.modulos * modulo.potencia_w <= inv.potencia_cc_max_w / inv.n_mppt
+    assert arr.modulos_usados == 22
+    assert any("fora das strings" in a for a in arr.alertas)
+
+
+def test_carga_dividida_entre_inversores(modulo):
+    inv = carregar_inversor("exemplo-10k-tri")
+    arr = strings.dimensionar(modulo, inv, 2, {"A": 32, "B": 12}, strings.CondicoesLocais())
+    for i in (1, 2):
+        pcc = sum(m.modulos for m in arr.mppts if m.inversor == i) * modulo.potencia_w
+        assert pcc <= inv.potencia_cc_max_w
+    tamanhos = [m.modulos_por_string for m in arr.mppts if m.plano == "A" and m.strings]
+    assert max(tamanhos) - min(tamanhos) <= 1  # strings equilibradas
 
 
 def test_inversor_incompativel_gera_erro():

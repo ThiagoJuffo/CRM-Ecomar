@@ -37,10 +37,25 @@ def obter_planos(entrada: dict) -> tuple[list[PlanoTelhado], dict | None]:
             lat, lng = telhado.get("lat"), telhado.get("lng")
             if lat is None or lng is None:
                 lat, lng = solar_api.geocodificar(entrada["projeto"]["endereco"])
-            insights = solar_api.buscar_edificacao(lat, lng, qualidade_minima=telhado.get("qualidade", "MEDIUM"))
+            insights = _buscar_com_fallback(lat, lng, telhado.get("qualidade", "HIGH"))
         planos = solar_api.planos_do_telhado(insights)
+        if insights.get("imageryQuality") == "LOW":
+            for p in planos:
+                p.observacoes.append("Imagem da Solar API de qualidade LOW: inclinação e área podem "
+                                     "ter erro maior; medir no local antes do projeto executivo.")
         return planos, insights
     return [plano_de_dict(p) for p in telhado["planos"]], None
+
+
+def _buscar_com_fallback(lat: float, lng: float, qualidade: str) -> dict:
+    """Tenta a qualidade pedida e, se o Google não tiver dados, as inferiores."""
+    niveis = ["HIGH", "MEDIUM", "LOW"]
+    for nivel in niveis[niveis.index(qualidade):]:
+        try:
+            return solar_api.buscar_edificacao(lat, lng, qualidade_minima=nivel)
+        except solar_api.SemDadosSolarApi:
+            continue
+    raise solar_api.ErroSolarApi("A Solar API não tem dados deste telhado; desenhe o telhado manualmente.")
 
 
 def _selecionar_planos(planos: list[PlanoTelhado], fracao_min_sol: float) -> list[PlanoTelhado]:

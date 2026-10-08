@@ -77,12 +77,16 @@ def limites_da_string(modulo: Modulo, inv: Inversor, cond: CondicoesLocais) -> L
 def _opcoes_por_mppt(modulo: Modulo, inv: Inversor, lim: LimitesString) -> list[tuple[int, int]]:
     """(strings, módulos por string) válidos para um MPPT, incluindo vazio."""
     opcoes = [(0, 0)]
+    # cada MPPT recebe no máximo sua fração da potência CC máxima do inversor,
+    # o que distribui a carga entre MPPTs e entre inversores
+    potencia_max_mppt = inv.potencia_cc_max_w / inv.n_mppt
     for s in range(1, inv.strings_por_mppt + 1):
         # Acima da Imp máx. o inversor só limita a corrente; o limite rígido é a Isc máx.
         if s * modulo.isc > inv.isc_max_por_mppt:
             continue
         for n in range(lim.n_min, lim.n_max + 1):
-            opcoes.append((s, n))
+            if s * n * modulo.potencia_w <= potencia_max_mppt:
+                opcoes.append((s, n))
     return opcoes
 
 
@@ -108,11 +112,17 @@ def _melhor_combinacao(n_disp: int, mppts: int, opcoes: list[tuple[int, int]]) -
 
 
 def _melhor(a, b) -> bool:
+    """Menos strings; depois strings de tamanhos parecidos; depois menos tamanhos distintos."""
     if a[0] != b[0]:
         return a[0] < b[0]
-    tam_a = {n for s, n in a[1] if s}
-    tam_b = {n for s, n in b[1] if s}
-    return len(tam_a) < len(tam_b)
+
+    def dispersao(escolhas):
+        tamanhos = [n for s, n in escolhas if s]
+        return (max(tamanhos) - min(tamanhos)) if tamanhos else 0
+
+    if dispersao(a[1]) != dispersao(b[1]):
+        return dispersao(a[1]) < dispersao(b[1])
+    return len({n for s, n in a[1] if s}) < len({n for s, n in b[1] if s})
 
 
 def dimensionar(modulo: Modulo, inv: Inversor, quantidade_inversores: int,

@@ -4,7 +4,7 @@
     "cliente": "Cliente Exemplo",
     "endereco": "Av. Paulista, 1000 - Sao Paulo/SP"
   },
-  "telhado": {"origem": "solar_api", "qualidade": "MEDIUM"},
+  "telhado": {"origem": "solar_api", "qualidade": "HIGH"},
   "modulo": "exemplo-550",
   "inversor": {"id": "exemplo-10k-tri", "quantidade": null},
   "local": {"temp_min_c": 5, "temp_max_amb_c": 36},

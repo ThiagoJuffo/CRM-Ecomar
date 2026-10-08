@@ -24,6 +24,10 @@ class ErroSolarApi(RuntimeError):
     pass
 
 
+class SemDadosSolarApi(ErroSolarApi):
+    """O Google não tem dados deste telhado na qualidade pedida."""
+
+
 def _chave(chave: str | None) -> str:
     chave = chave or os.environ.get("GOOGLE_MAPS_API_KEY")
     if not chave:
@@ -69,7 +73,7 @@ def buscar_edificacao(lat: float, lng: float, chave: str | None = None,
         timeout=60,
     )
     if resp.status_code == 404:
-        raise ErroSolarApi(
+        raise SemDadosSolarApi(
             "A Solar API não tem dados deste telhado na qualidade pedida. "
             "Tente qualidade_minima='LOW' ou desenhe o telhado manualmente."
         )
@@ -137,7 +141,7 @@ def planos_do_telhado(insights: dict, inclinacao_max: float = 60.0,
             inclinacao_graus=round(seg.get("pitchDegrees", 0.0), 1),
             azimute_graus=round(seg.get("azimuthDegrees", 0.0), 1),
             poligono=box(0, 0, largura, comprimento),
-            horas_sol_ano=horas,
+            horas_sol_ano=round(horas) if horas else None,
             origem="solar_api",
             observacoes=[
                 "Contorno retangular aproximado a partir da Solar API: confirmar medidas e "
